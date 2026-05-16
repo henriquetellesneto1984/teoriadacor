@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HSB</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f5f5f5;
+  --surface: #ffffff;
+  --border: rgba(0,0,0,0.07);
+  --text: #111;
+  --muted: #999;
+  --dim: #ccc;
+}
+
+body {
+  background: var(--bg);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.app {
+  width: 100%;
+  max-width: 700px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.swatch {
+  grid-column: 1 / -1;
+  height: 220px;
+  border-radius: 16px;
+  transition: background 0.1s ease;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.control {
+  background: var(--surface);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.control-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.control-name {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.control-val {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  min-width: 44px;
+  text-align: right;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  border: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid rgba(0,0,0,0.15);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  margin-top: -6px;
+  transition: transform 0.1s;
+}
+
+input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+}
+
+.info-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.info-row {
+  background: var(--surface);
+  padding: 0.85rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.info-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.info-value {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.strips {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.strip-block {
+  background: var(--surface);
+  padding: 1rem 1.25rem;
+}
+
+.strip-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.6rem;
+}
+
+.strip-swatches {
+  display: flex;
+  gap: 3px;
+  height: 28px;
+}
+
+.strip-swatch {
+  flex: 1;
+  border-radius: 4px;
+  transition: background 0.1s;
+}
+
+.wcag-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="swatch" id="swatch"></div>
+
+  <div class="controls">
+    <div class="control">
+      <div class="control-top">
+        <span class="control-name">Matiz</span>
+        <span class="control-val"><span id="h-val">241</span>°</span>
+      </div>
+      <input type="range" id="slider-h" min="0" max="360" value="241">
+    </div>
+    <div class="control">
+      <div class="control-top">
+        <span class="control-name">Saturação</span>
+        <span class="control-val"><span id="s-val">100</span>%</span>
+      </div>
+      <input type="range" id="slider-s" min="0" max="100" value="100">
+    </div>
+    <div class="control">
+      <div class="control-top">
+        <span class="control-name">Valor</span>
+        <span class="control-val"><span id="b-val">96</span>%</span>
+      </div>
+      <input type="range" id="slider-b" min="0" max="100" value="96">
+    </div>
+  </div>
+
+  <div class="info-panel">
+    <div class="info-row">
+      <span class="info-label">HEX</span>
+      <span class="info-value" id="val-hex">#0800F5</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">RGB</span>
+      <span class="info-value" id="val-rgb">8, 0, 245</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">HSB</span>
+      <span class="info-value" id="val-hsb">241° 100% 96%</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Contraste</span>
+      <span class="info-value" style="display:flex;align-items:center;gap:8px;">
+        <span id="val-contrast">—</span>
+        <span class="wcag-dot" id="wcag-dot"></span>
+      </span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">WCAG</span>
+      <span class="info-value" id="val-wcag">—</span>
+    </div>
+  </div>
+
+  <div class="strips">
+    <div class="strip-block">
+      <div class="strip-label">Matiz</div>
+      <div class="strip-swatches" id="hue-strip"></div>
+    </div>
+    <div class="strip-block">
+      <div class="strip-label">Saturação</div>
+      <div class="strip-swatches" id="sat-strip"></div>
+    </div>
+    <div class="strip-block">
+      <div class="strip-label">Valor</div>
+      <div class="strip-swatches" id="bri-strip"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function hsbToRgb(h, s, b) {
+  s /= 100; b /= 100;
+  const k = n => (n + h / 60) % 6;
+  const f = n => b * (1 - s * Math.max(0, Math.min(k(n), 4 - k(n), 1)));
+  return [Math.round(f(5)*255), Math.round(f(3)*255), Math.round(f(1)*255)];
+}
+
+function toHex(r, g, b) {
+  return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0').toUpperCase()).join('');
+}
+
+function luminance(r, g, b) {
+  return [r,g,b].map(v => {
+    v /= 255;
+    return v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4);
+  }).reduce((s,v,i) => s + v*[0.2126,0.7152,0.0722][i], 0);
+}
+
+function buildStrip(id, colors) {
+  const el = document.getElementById(id);
+  el.innerHTML = '';
+  colors.forEach(c => {
+    const d = document.createElement('div');
+    d.className = 'strip-swatch';
+    d.style.background = c;
+    el.appendChild(d);
+  });
+}
+
+function updateTrack(slider, colors) {
+  const stops = colors.map((c,i) => `${c} ${Math.round(i/(colors.length-1)*100)}%`).join(', ');
+  slider.style.background = `linear-gradient(to right, ${stops})`;
+}
+
+function update() {
+  const h = parseInt(document.getElementById('slider-h').value);
+  const s = parseInt(document.getElementById('slider-s').value);
+  const b = parseInt(document.getElementById('slider-b').value);
+
+  document.getElementById('h-val').textContent = h;
+  document.getElementById('s-val').textContent = s;
+  document.getElementById('b-val').textContent = b;
+
+  const [r, g, bl] = hsbToRgb(h, s, b);
+  const hex = toHex(r, g, bl);
+
+  document.getElementById('swatch').style.background = hex;
+  document.getElementById('val-hex').textContent = hex;
+  document.getElementById('val-rgb').textContent = `${r}, ${g}, ${bl}`;
+  document.getElementById('val-hsb').textContent = `${h}° ${s}% ${b}%`;
+
+  const L = luminance(r, g, bl);
+  const cr = (1.05) / (L + 0.05);
+  document.getElementById('val-contrast').textContent = cr.toFixed(2) + ':1';
+
+  const dot = document.getElementById('wcag-dot');
+  let wcagText = '';
+  if (cr >= 7)        { wcagText = 'AAA'; dot.style.background = '#4ade80'; }
+  else if (cr >= 4.5) { wcagText = 'AA'; dot.style.background = '#4ade80'; }
+  else if (cr >= 3)   { wcagText = 'AA Large'; dot.style.background = '#facc15'; }
+  else                { wcagText = 'Falha'; dot.style.background = '#f87171'; }
+  document.getElementById('val-wcag').textContent = wcagText;
+
+  const hSteps = [0,45,90,135,180,225,270,315,360];
+  updateTrack(document.getElementById('slider-h'),
+    hSteps.map(hv => { const [rr,gg,bb]=hsbToRgb(hv,s,b); return `rgb(${rr},${gg},${bb})`; }));
+
+  const sColors = [0,20,40,60,80,100].map(sv => { const [rr,gg,bb]=hsbToRgb(h,sv,b); return `rgb(${rr},${gg},${bb})`; });
+  updateTrack(document.getElementById('slider-s'), sColors);
+
+  const bColors = [0,20,40,60,80,100].map(bv => { const [rr,gg,bb]=hsbToRgb(h,s,bv); return `rgb(${rr},${gg},${bb})`; });
+  updateTrack(document.getElementById('slider-b'), bColors);
+
+  buildStrip('hue-strip', hSteps.map(hv => { const [rr,gg,bb]=hsbToRgb(hv,s,b); return `rgb(${rr},${gg},${bb})`; }));
+  buildStrip('sat-strip', [0,15,30,45,60,75,90,100].map(sv => { const [rr,gg,bb]=hsbToRgb(h,sv,b); return `rgb(${rr},${gg},${bb})`; }));
+  buildStrip('bri-strip', [0,15,30,45,60,75,90,100].map(bv => { const [rr,gg,bb]=hsbToRgb(h,s,bv); return `rgb(${rr},${gg},${bb})`; }));
+}
+
+['slider-h','slider-s','slider-b'].forEach(id =>
+  document.getElementById(id).addEventListener('input', update));
+
+update();
+</script>
+</body>
+</html>
